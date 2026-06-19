@@ -3,7 +3,7 @@
 > A free, browser-based security assessment tool covering all 18 CIS Controls and 153 safeguards.  
 > No installation. No login. No data leaves your device.
 
-**🔗 [Try the live tool → mrpranto.github.io/cis-gap-analysis](https://mrpranto.github.io/cis-gap-analysis)**
+**🔗 [Try the live tool → mrpranto.github.io/cis-gap-analysis](https://mizanpranto.github.io/cis-gap-analysis/)**
 
 ---
 
