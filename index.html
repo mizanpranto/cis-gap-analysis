@@ -1,0 +1,3153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIS Controls v8.1 — Gap Analysis Tool</title>
+    <style>
+         :root {
+            --bg: #0D1117;
+            --surface: #161B22;
+            --surface2: #1C2128;
+            --border: #30363D;
+            --border-light: #21262D;
+            --text: #E6EDF3;
+            --text-muted: #7D8590;
+            --text-dim: #484F58;
+            --green: #1D9E75;
+            --green-light: #E1F5EE;
+            --green-dim: #0D3328;
+            --amber: #BA7517;
+            --amber-light: #FAEEDA;
+            --amber-dim: #2D1F06;
+            --red: #E24B4A;
+            --red-dim: #2D1010;
+            --blue: #378ADD;
+            --blue-dim: #0C1F35;
+            --accent: #1D9E75;
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        html {
+            font-size: 15px;
+        }
+        
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+        /* Layout */
+        
+        .app-header {
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--green);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-icon svg {
+            width: 16px;
+            height: 16px;
+            fill: #fff;
+        }
+        
+        .logo-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .logo-version {
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 2px 7px;
+            border-radius: 12px;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: calc(100vh - 56px);
+        }
+        
+        .sidebar {
+            border-right: 1px solid var(--border);
+            padding: 20px 16px;
+            position: sticky;
+            top: 56px;
+            height: calc(100vh - 56px);
+            overflow-y: auto;
+        }
+        
+        .content {
+            padding: 24px;
+        }
+        /* Buttons */
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+        
+        .btn-primary {
+            background: var(--green);
+            color: #fff;
+            border-color: var(--green);
+        }
+        
+        .btn-primary:hover {
+            background: #17855f;
+        }
+        
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+            border-color: var(--border);
+        }
+        
+        .btn-ghost:hover {
+            background: var(--surface);
+            color: var(--text);
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .btn-icon {
+            padding: 7px;
+        }
+        /* Sidebar */
+        
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 8px;
+            padding: 0 4px;
+        }
+        
+        .client-input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 13px;
+            padding: 8px 10px;
+            outline: none;
+        }
+        
+        .client-input:focus {
+            border-color: var(--green);
+        }
+        
+        .client-input::placeholder {
+            color: var(--text-dim);
+        }
+        
+        .ig-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .ig-tab {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: var(--radius);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        
+        .ig-tab:hover {
+            background: var(--surface);
+            color: var(--text);
+        }
+        
+        .ig-tab.active {
+            background: var(--green-dim);
+            border-color: var(--green);
+            color: var(--green);
+        }
+        
+        .ig-tab-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .ig-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .ig-count {
+            font-size: 11px;
+            color: var(--text-dim);
+            background: var(--surface2);
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
+        
+        .ig-tab.active .ig-count {
+            background: var(--green-dim);
+            color: var(--green);
+        }
+        
+        .fn-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .fn-filter {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-muted);
+            transition: all 0.12s;
+        }
+        
+        .fn-filter:hover {
+            background: var(--surface);
+            color: var(--text);
+        }
+        
+        .fn-filter.active {
+            color: var(--text);
+            background: var(--surface2);
+        }
+        
+        .fn-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .score-ring-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 0 8px;
+        }
+        
+        .score-ring {
+            position: relative;
+            width: 90px;
+            height: 90px;
+        }
+        
+        .score-ring svg {
+            transform: rotate(-90deg);
+        }
+        
+        .score-ring-val {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .score-num {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--green);
+        }
+        
+        .score-label {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        
+        .score-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            width: 100%;
+            margin-top: 12px;
+        }
+        
+        .score-stat {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .score-stat-val {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .score-stat-lbl {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+        /* Search */
+        
+        .search-wrap {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-wrap svg {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 15px;
+            height: 15px;
+            stroke: var(--text-dim);
+            fill: none;
+            stroke-width: 2;
+        }
+        
+        .search-input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 13px;
+            padding: 9px 10px 9px 34px;
+            outline: none;
+        }
+        
+        .search-input:focus {
+            border-color: var(--green);
+        }
+        
+        .search-input::placeholder {
+            color: var(--text-dim);
+        }
+        /* Controls grid */
+        
+        .controls-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .controls-meta-left {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        
+        .controls-meta-left strong {
+            color: var(--text);
+        }
+        
+        .control-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+        
+        .control-card:hover {
+            border-color: #444C56;
+        }
+        
+        .control-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .ctrl-num-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        
+        .ctrl-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .ctrl-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        
+        .ctrl-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        
+        .ctrl-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        
+        .ctrl-score-pill {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+        
+        .pill-green {
+            background: var(--green-dim);
+            color: var(--green);
+        }
+        
+        .pill-amber {
+            background: var(--amber-dim);
+            color: var(--amber);
+        }
+        
+        .pill-red {
+            background: var(--red-dim);
+            color: var(--red);
+        }
+        
+        .pill-gray {
+            background: var(--surface2);
+            color: var(--text-muted);
+        }
+        
+        .ctrl-chevron {
+            width: 16px;
+            height: 16px;
+            stroke: var(--text-dim);
+            fill: none;
+            stroke-width: 2;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .ctrl-chevron.open {
+            transform: rotate(180deg);
+        }
+        
+        .safeguards-table {
+            border-top: 1px solid var(--border-light);
+        }
+        
+        .sg-row {
+            display: grid;
+            grid-template-columns: 52px 1fr 160px;
+            align-items: start;
+            gap: 0;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-light);
+            transition: background 0.1s;
+        }
+        
+        .sg-row:last-child {
+            border-bottom: none;
+        }
+        
+        .sg-row:hover {
+            background: var(--surface2);
+        }
+        
+        .sg-id {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
+            font-variant-numeric: tabular-nums;
+            padding-top: 2px;
+        }
+        
+        .sg-body {
+            padding-right: 12px;
+        }
+        
+        .sg-title {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text);
+            line-height: 1.45;
+            margin-bottom: 4px;
+        }
+        
+        .sg-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .sg-tag {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+        
+        .sg-tag-fn-Govern {
+            border-color: #534AB7;
+            color: #AFA9EC;
+        }
+        
+        .sg-tag-fn-Identify {
+            border-color: #185FA5;
+            color: #85B7EB;
+        }
+        
+        .sg-tag-fn-Protect {
+            border-color: #0F6E56;
+            color: #5DCAA5;
+        }
+        
+        .sg-tag-fn-Detect {
+            border-color: #854F0B;
+            color: #EF9F27;
+        }
+        
+        .sg-tag-fn-Respond {
+            border-color: #993C1D;
+            color: #F0997B;
+        }
+        
+        .sg-tag-fn-Recover {
+            border-color: #993556;
+            color: #ED93B1;
+        }
+        
+        .sg-desc-toggle {
+            font-size: 10px;
+            color: var(--text-dim);
+            cursor: pointer;
+            margin-top: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .sg-desc-toggle:hover {
+            color: var(--text-muted);
+        }
+        
+        .sg-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.55;
+            margin-top: 6px;
+            display: none;
+        }
+        
+        .sg-desc.show {
+            display: block;
+        }
+        
+        .sg-status {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .status-select {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 12px;
+            padding: 6px 8px;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .status-select:focus {
+            border-color: var(--green);
+        }
+        
+        .status-select.s-inplace {
+            border-color: var(--green);
+            color: var(--green);
+            background: var(--green-dim);
+        }
+        
+        .status-select.s-partial {
+            border-color: var(--amber);
+            color: var(--amber);
+            background: var(--amber-dim);
+        }
+        
+        .status-select.s-gap {
+            border-color: var(--red);
+            color: var(--red);
+            background: var(--red-dim);
+        }
+        
+        .status-select.s-na {
+            border-color: var(--text-dim);
+            color: var(--text-muted);
+        }
+        
+        .notes-input {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 11px;
+            padding: 5px 7px;
+            outline: none;
+            resize: none;
+            height: 36px;
+            font-family: inherit;
+            color: var(--text-muted);
+        }
+        
+        .notes-input:focus {
+            border-color: var(--green);
+            height: 52px;
+            color: var(--text);
+        }
+        
+        .notes-input::placeholder {
+            color: var(--text-dim);
+        }
+        /* Empty state */
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        .empty-state svg {
+            width: 40px;
+            height: 40px;
+            stroke: var(--text-dim);
+            fill: none;
+            stroke-width: 1.5;
+            margin: 0 auto 12px;
+            display: block;
+        }
+        /* Export bar */
+        
+        .export-bar {
+            position: sticky;
+            bottom: 0;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        
+        .export-bar-left {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        
+        .export-bar-left strong {
+            color: var(--text);
+        }
+        
+        .export-actions {
+            display: flex;
+            gap: 8px;
+        }
+        /* Progress bar */
+        
+        .ctrl-progress {
+            height: 2px;
+            background: var(--border);
+        }
+        
+        .ctrl-progress-fill {
+            height: 2px;
+            transition: width 0.4s;
+        }
+        /* Tooltip-like note */
+        
+        .ig-info {
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 8px 10px;
+            background: var(--surface2);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            line-height: 1.5;
+            margin-top: 6px;
+        }
+        /* Responsive */
+        
+        @media (max-width: 768px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                position: static;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            .sg-row {
+                grid-template-columns: 40px 1fr;
+            }
+            .sg-status {
+                display: none;
+            }
+        }
+        
+        @media print {
+            .export-bar,
+            .app-header {
+                display: none;
+            }
+        }
+        /* Scrollbar */
+        
+         ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+         ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+         ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="app-header">
+        <div class="logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 16 16"><path d="M8 1L2 4v4c0 3.3 2.5 6.4 6 7 3.5-.6 6-3.7 6-7V4L8 1z"/></svg>
+            </div>
+            <span class="logo-text">CIS Controls Gap Analysis</span>
+            <span class="logo-version">v8.1</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-ghost btn-sm" id="resetBtn">Reset</button>
+            <button class="btn btn-ghost btn-sm" id="exportCsvBtn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export CSV
+    </button>
+            <button class="btn btn-primary btn-sm" id="aiReportBtn">&#128196; Detail Report</button>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <aside class="sidebar">
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Client</div>
+                <input class="client-input" id="clientName" placeholder="Organization name" />
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Implementation Group</div>
+                <div class="ig-tabs">
+                    <div class="ig-tab active" data-ig="1">
+                        <div class="ig-tab-left">
+                            <div class="ig-dot" style="background:#5DCAA5"></div>IG1 — Basic</div>
+                        <span class="ig-count">56</span>
+                    </div>
+                    <div class="ig-tab" data-ig="2">
+                        <div class="ig-tab-left">
+                            <div class="ig-dot" style="background:#EF9F27"></div>IG2 — Foundational</div>
+                        <span class="ig-count">130</span>
+                    </div>
+                    <div class="ig-tab" data-ig="3">
+                        <div class="ig-tab-left">
+                            <div class="ig-dot" style="background:#F0997B"></div>IG3 — Advanced</div>
+                        <span class="ig-count">153</span>
+                    </div>
+                </div>
+                <div class="ig-info" id="igInfo">Small/low-risk organizations. Essential cyber hygiene covering 56 safeguards.</div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Score</div>
+                <div class="score-ring-wrap">
+                    <div class="score-ring">
+                        <svg width="90" height="90" viewBox="0 0 90 90">
+            <circle cx="45" cy="45" r="36" fill="none" stroke="#21262D" stroke-width="7"/>
+            <circle cx="45" cy="45" r="36" fill="none" stroke="#1D9E75" stroke-width="7" stroke-linecap="round"
+              stroke-dasharray="226" stroke-dashoffset="226" id="ringFill" style="transition:stroke-dashoffset 0.5s"/>
+          </svg>
+                        <div class="score-ring-val">
+                            <div class="score-num" id="scorePct">0%</div>
+                            <div class="score-label">score</div>
+                        </div>
+                    </div>
+                    <div class="score-stats">
+                        <div class="score-stat">
+                            <div class="score-stat-val" style="color:#1D9E75" id="statImpl">0</div>
+                            <div class="score-stat-lbl">In place</div>
+                        </div>
+                        <div class="score-stat">
+                            <div class="score-stat-val" style="color:#BA7517" id="statPartial">0</div>
+                            <div class="score-stat-lbl">Partial</div>
+                        </div>
+                        <div class="score-stat">
+                            <div class="score-stat-val" style="color:#E24B4A" id="statGap">0</div>
+                            <div class="score-stat-lbl">Gaps</div>
+                        </div>
+                        <div class="score-stat">
+                            <div class="score-stat-val" style="color:#7D8590" id="statNa">0</div>
+                            <div class="score-stat-lbl">N/A</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section" style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
+                <div class="sidebar-label">Consultant</div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                    <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1D9E75,#0f6e56);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0">MR</div>
+                    <div>
+                        <div style="font-size:12px;font-weight:600;color:var(--text)">Mizanur Rahman Pranto</div>
+                        <div style="font-size:10px;color:var(--text-muted)">Cybersecurity Consultant</div>
+                    </div>
+                </div>
+                <a href="mailto:mprantox41@gmail.com" style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text-muted);text-decoration:none;padding:5px 0;transition:color 0.15s" onmouseover="this.style.color='#1D9E75'" onmouseout="this.style.color=''">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> mprantox41@gmail.com
+                </a>
+                <a href="https://www.linkedin.com/in/mrpranto1997/" target="_blank" style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text-muted);text-decoration:none;padding:5px 0;transition:color 0.15s" onmouseover="this.style.color='#0077b5'"
+                    onmouseout="this.style.color=''">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>                    linkedin.com/in/mrpranto1997
+                </a>
+                <a href="mailto:mprantox41@gmail.com" style="display:block;margin-top:10px;padding:7px 12px;background:var(--green);color:#fff;border-radius:var(--radius);font-size:11px;font-weight:600;text-align:center;text-decoration:none">
+        Hire me for an assessment
+      </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Security function</div>
+                <div class="fn-filters">
+                    <div class="fn-filter active" data-fn="all">
+                        <div style="display:flex;align-items:center;gap:7px">
+                            <div class="fn-dot" style="background:#7D8590"></div>All functions</div>
+                    </div>
+                    <div class="fn-filter" data-fn="Govern">
+                        <div style="display:flex;align-items:center;gap:7px">
+                            <div class="fn-dot" style="background:#7F77DD"></div>Govern</div>
+                    </div>
+                    <div class="fn-filter" data-fn="Identify">
+                        <div style="display:flex;align-items:center;gap:7px">
+                            <div class="fn-dot" style="background:#378ADD"></div>Identify</div>
+                    </div>
+                    <div class="fn-filter" data-fn="Protect">
+                        <div style="display:flex;align-items:center;gap:7px">
+                            <div class="fn-dot" style="background:#1D9E75"></div>Protect</div>
+                    </div>
+                    <div class="fn-filter" data-fn="Detect">
+                        <div style="display:flex;align-items:center;gap:7px">
+                            <div class="fn-dot" style="background:#EF9F27"></div>Detect</div>
+                    </div>
+                    <div class="fn-filter" data-fn="Respond">
+                        <div style="display:flex;align-items:center;gap:7px">
+                            <div class="fn-dot" style="background:#F0997B"></div>Respond</div>
+                    </div>
+                    <div class="fn-filter" data-fn="Recover">
+                        <div style="display:flex;align-items:center;gap:7px">
+                            <div class="fn-dot" style="background:#ED93B1"></div>Recover</div>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <main class="content" id="mainContent">
+            <div class="search-wrap">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="search-input" id="searchInput" placeholder="Search safeguards by title or ID…" />
+            </div>
+            <div class="controls-meta">
+                <div class="controls-meta-left">Showing <strong id="metaCount">56</strong> safeguards across <strong id="metaControls">18</strong> controls</div>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-ghost btn-sm" id="expandAllBtn">Expand all</button>
+                    <button class="btn btn-ghost btn-sm" id="collapseAllBtn">Collapse all</button>
+                </div>
+            </div>
+            <div id="controlsList"></div>
+            <div class="empty-state hidden" id="emptyState">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> No safeguards match your search.
+            </div>
+        </main>
+    </div>
+
+    <div class="export-bar">
+        <div class="export-bar-left">
+            <strong id="barAssessed">0</strong> of <strong id="barTotal">56</strong> safeguards assessed
+        </div>
+        <div class="export-actions">
+            <button class="btn btn-ghost btn-sm" id="exportPrintBtn">Print report</button>
+            <button class="btn btn-primary btn-sm" id="exportCsvBtn2">Download CSV</button>
+        </div>
+    </div>
+
+    <script>
+        const CONTROLS = {
+            1: "Inventory and Control of Enterprise Assets",
+            2: "Inventory and Control of Software Assets",
+            3: "Data Protection",
+            4: "Secure Configuration of Enterprise Assets and Software",
+            5: "Account Management",
+            6: "Access Control Management",
+            7: "Continuous Vulnerability Management",
+            8: "Audit Log Management",
+            9: "Email and Web Browser Protections",
+            10: "Malware Defenses",
+            11: "Data Recovery",
+            12: "Network Infrastructure Management",
+            13: "Network Monitoring and Defense",
+            14: "Security Awareness and Skills Training",
+            15: "Service Provider Management",
+            16: "Application Software Security",
+            17: "Incident Response Management",
+            18: "Penetration Testing"
+        };
+
+        const SG = [{
+            c: 1,
+            id: "1.1",
+            fn: "Identify",
+            asset: "Devices",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain Detailed Enterprise Asset Inventory",
+            d: "Establish and maintain an accurate, detailed, and up-to-date inventory of all enterprise assets with the potential to store or process data, including end-user devices, network devices, non-computing/IoT devices, and servers. Review and update bi-annually."
+        }, {
+            c: 1,
+            id: "1.2",
+            fn: "Respond",
+            asset: "Devices",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Address Unauthorized Assets",
+            d: "Ensure that a process exists to address unauthorized assets on a weekly basis. The enterprise may choose to remove, deny, or quarantine the asset."
+        }, {
+            c: 1,
+            id: "1.3",
+            fn: "Detect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Utilize an Active Discovery Tool",
+            d: "Utilize an active discovery tool to identify assets connected to the enterprise's network. Configure the active discovery tool to execute daily, or more frequently."
+        }, {
+            c: 1,
+            id: "1.4",
+            fn: "Identify",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Use DHCP Logging to Update Enterprise Asset Inventory",
+            d: "Use DHCP logging on all DHCP servers or IP address management tools to update the enterprise's asset inventory weekly."
+        }, {
+            c: 1,
+            id: "1.5",
+            fn: "Detect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Use a Passive Asset Discovery Tool",
+            d: "Use a passive discovery tool to identify assets connected to the enterprise's network. Review and use scans to update the asset inventory at least weekly."
+        }, {
+            c: 2,
+            id: "2.1",
+            fn: "Identify",
+            asset: "Software",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Software Inventory",
+            d: "Establish and maintain a detailed inventory of all licensed software installed on enterprise assets. Review and update bi-annually."
+        }, {
+            c: 2,
+            id: "2.2",
+            fn: "Identify",
+            asset: "Software",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Ensure Authorized Software is Currently Supported",
+            d: "Ensure that only currently supported software is designated as authorized in the software inventory for enterprise assets. Review monthly."
+        }, {
+            c: 2,
+            id: "2.3",
+            fn: "Respond",
+            asset: "Software",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Address Unauthorized Software",
+            d: "Ensure that unauthorized software is either removed from use on enterprise assets or receives a documented exception. Review monthly."
+        }, {
+            c: 2,
+            id: "2.4",
+            fn: "Detect",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Utilize Automated Software Inventory Tools",
+            d: "Utilize software inventory tools throughout the enterprise to automate the discovery and documentation of installed software."
+        }, {
+            c: 2,
+            id: "2.5",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Allowlist Authorized Software",
+            d: "Use technical controls, such as application allowlisting, to ensure that only authorized software can execute or be accessed. Reassess bi-annually."
+        }, {
+            c: 2,
+            id: "2.6",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Allowlist Authorized Libraries",
+            d: "Use technical controls to ensure that only authorized software libraries are allowed to load into a system process. Block unauthorized libraries."
+        }, {
+            c: 2,
+            id: "2.7",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Allowlist Authorized Scripts",
+            d: "Use technical controls, such as digital signatures and version control, to ensure that only authorized scripts are allowed to execute."
+        }, {
+            c: 3,
+            id: "3.1",
+            fn: "Govern",
+            asset: "Data",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Data Management Process",
+            d: "Establish and maintain a documented data management process addressing data sensitivity, owner, handling, retention limits, and disposal requirements."
+        }, {
+            c: 3,
+            id: "3.2",
+            fn: "Identify",
+            asset: "Data",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Data Inventory",
+            d: "Establish and maintain a data inventory based on the enterprise's data management process. Inventory sensitive data annually, at a minimum."
+        }, {
+            c: 3,
+            id: "3.3",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Configure Data Access Control Lists",
+            d: "Configure data access control lists based on a user's need to know. Apply to local and remote file systems, databases, and applications."
+        }, {
+            c: 3,
+            id: "3.4",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Enforce Data Retention",
+            d: "Retain data according to the enterprise's documented data management process. Data retention must include both minimum and maximum timelines."
+        }, {
+            c: 3,
+            id: "3.5",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Securely Dispose of Data",
+            d: "Securely dispose of data as outlined in the enterprise's documented data management process, commensurate with data sensitivity."
+        }, {
+            c: 3,
+            id: "3.6",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Encrypt Data on End-User Devices",
+            d: "Encrypt data on end-user devices containing sensitive data. Example implementations: Windows BitLocker, Apple FileVault, Linux dm-crypt."
+        }, {
+            c: 3,
+            id: "3.7",
+            fn: "Identify",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Data Classification Scheme",
+            d: "Establish and maintain an overall data classification scheme for the enterprise. Review and update the classification scheme annually."
+        }, {
+            c: 3,
+            id: "3.8",
+            fn: "Identify",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Document Data Flows",
+            d: "Document data flows including service provider data flows. Review and update documentation annually."
+        }, {
+            c: 3,
+            id: "3.9",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Encrypt Data on Removable Media",
+            d: "Encrypt data on removable media."
+        }, {
+            c: 3,
+            id: "3.10",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Encrypt Sensitive Data in Transit",
+            d: "Encrypt sensitive data in transit. Example implementations include TLS and OpenSSH."
+        }, {
+            c: 3,
+            id: "3.11",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Encrypt Sensitive Data at Rest",
+            d: "Encrypt sensitive data at rest on servers, applications, and databases. Storage-layer encryption meets the minimum requirement."
+        }, {
+            c: 3,
+            id: "3.12",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Segment Data Processing and Storage Based on Sensitivity",
+            d: "Segment data processing and storage based on the sensitivity of the data. Do not process sensitive data on assets intended for lower sensitivity data."
+        }, {
+            c: 3,
+            id: "3.13",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Deploy a Data Loss Prevention Solution",
+            d: "Implement an automated tool, such as a host-based DLP tool, to identify all sensitive data stored, processed, or transmitted through enterprise assets."
+        }, {
+            c: 3,
+            id: "3.14",
+            fn: "Detect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Log Sensitive Data Access",
+            d: "Log sensitive data access, including modification and disposal."
+        }, {
+            c: 4,
+            id: "4.1",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Secure Configuration Process",
+            d: "Establish and maintain a documented secure configuration process for enterprise assets and software. Review and update annually."
+        }, {
+            c: 4,
+            id: "4.2",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Secure Configuration Process for Network Infrastructure",
+            d: "Establish and maintain a documented secure configuration process for network devices. Review and update documentation annually."
+        }, {
+            c: 4,
+            id: "4.3",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Configure Automatic Session Locking on Enterprise Assets",
+            d: "Configure automatic session locking on enterprise assets after a defined period of inactivity. For OS: no more than 15 minutes. For mobile: no more than 2 minutes."
+        }, {
+            c: 4,
+            id: "4.4",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Implement and Manage a Firewall on Servers",
+            d: "Implement and manage a firewall on servers, where supported. Example implementations include a virtual firewall, OS firewall, or third-party firewall agent."
+        }, {
+            c: 4,
+            id: "4.5",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Implement and Manage a Firewall on End-User Devices",
+            d: "Implement and manage a host-based firewall or port-filtering tool on end-user devices, with a default-deny rule that drops all traffic except those explicitly allowed."
+        }, {
+            c: 4,
+            id: "4.6",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Securely Manage Enterprise Assets and Software",
+            d: "Securely manage enterprise assets and software. Use version-controlled IaC and access administrative interfaces over SSH and HTTPS. Do not use Telnet or HTTP."
+        }, {
+            c: 4,
+            id: "4.7",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Manage Default Accounts on Enterprise Assets and Software",
+            d: "Manage default accounts on enterprise assets and software, such as root, administrator, and other pre-configured vendor accounts."
+        }, {
+            c: 4,
+            id: "4.8",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Uninstall or Disable Unnecessary Services on Enterprise Assets and Software",
+            d: "Uninstall or disable unnecessary services on enterprise assets and software, such as an unused file sharing service or web application module."
+        }, {
+            c: 4,
+            id: "4.9",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Configure Trusted DNS Servers on Enterprise Assets",
+            d: "Configure trusted DNS servers on network infrastructure. Example: enterprise-controlled DNS servers and/or reputable externally accessible DNS servers."
+        }, {
+            c: 4,
+            id: "4.10",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Enforce Automatic Device Lockout on Portable End-User Devices",
+            d: "Enforce automatic device lockout following a predetermined threshold of local failed authentication attempts. For laptops: no more than 20 attempts. For tablets/smartphones: no more than 10."
+        }, {
+            c: 4,
+            id: "4.11",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Enforce Remote Wipe Capability on Portable End-User Devices",
+            d: "Remotely wipe enterprise data from enterprise-owned portable end-user devices when deemed appropriate such as lost or stolen devices."
+        }, {
+            c: 4,
+            id: "4.12",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Separate Enterprise Workspaces on Mobile End-User Devices",
+            d: "Ensure separate enterprise workspaces are used on mobile end-user devices, where supported. Example: Apple Configuration Profile or Android Work Profile."
+        }, {
+            c: 5,
+            id: "5.1",
+            fn: "Identify",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain an Inventory of Accounts",
+            d: "Establish and maintain an inventory of all accounts. Include user, administrator, and service accounts. Validate that all active accounts are authorized quarterly."
+        }, {
+            c: 5,
+            id: "5.2",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Use Unique Passwords",
+            d: "Use unique passwords for all enterprise assets. Best practice: 8-character minimum with MFA, 14-character minimum without MFA."
+        }, {
+            c: 5,
+            id: "5.3",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Disable Dormant Accounts",
+            d: "Delete or disable any dormant accounts after a period of 45 days of inactivity, where supported."
+        }, {
+            c: 5,
+            id: "5.4",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Restrict Administrator Privileges to Dedicated Administrator Accounts",
+            d: "Restrict administrator privileges to dedicated administrator accounts on enterprise assets. Conduct general computing from non-privileged accounts."
+        }, {
+            c: 5,
+            id: "5.5",
+            fn: "Identify",
+            asset: "Users",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain an Inventory of Service Accounts",
+            d: "Establish and maintain an inventory of service accounts. Perform service account reviews to validate all active accounts are authorized, quarterly at minimum."
+        }, {
+            c: 5,
+            id: "5.6",
+            fn: "Govern",
+            asset: "Users",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Centralize Account Management",
+            d: "Centralize account management through a directory or identity service."
+        }, {
+            c: 6,
+            id: "6.1",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish an Access Granting Process",
+            d: "Establish and follow a documented process, preferably automated, for granting access to enterprise assets upon new hire or role change."
+        }, {
+            c: 6,
+            id: "6.2",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish an Access Revoking Process",
+            d: "Establish and follow a process, preferably automated, for revoking access to enterprise assets through disabling accounts immediately upon termination or role change."
+        }, {
+            c: 6,
+            id: "6.3",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Require MFA for Externally-Exposed Applications",
+            d: "Require all externally-exposed enterprise or third-party applications to enforce MFA, where supported. Enforcing MFA through a directory service or SSO is satisfactory."
+        }, {
+            c: 6,
+            id: "6.4",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Require MFA for Remote Network Access",
+            d: "Require MFA for remote network access."
+        }, {
+            c: 6,
+            id: "6.5",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Require MFA for Administrative Access",
+            d: "Require MFA for all administrative access accounts, where supported, on all enterprise assets, whether managed on-site or through a service provider."
+        }, {
+            c: 6,
+            id: "6.6",
+            fn: "Identify",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain an Inventory of Authentication and Authorization Systems",
+            d: "Establish and maintain an inventory of the enterprise's authentication and authorization systems. Review and update annually."
+        }, {
+            c: 6,
+            id: "6.7",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Centralize Access Control",
+            d: "Centralize access control for all enterprise assets through a directory service or SSO provider, where supported."
+        }, {
+            c: 6,
+            id: "6.8",
+            fn: "Govern",
+            asset: "Users",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Define and Maintain Role-Based Access Control",
+            d: "Define and maintain role-based access control. Determine and document the access rights necessary for each role. Perform access control reviews annually."
+        }, {
+            c: 7,
+            id: "7.1",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Vulnerability Management Process",
+            d: "Establish and maintain a documented vulnerability management process for enterprise assets. Review and update documentation annually."
+        }, {
+            c: 7,
+            id: "7.2",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Remediation Process",
+            d: "Establish and maintain a risk-based remediation strategy documented in a remediation process, with monthly or more frequent reviews."
+        }, {
+            c: 7,
+            id: "7.3",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Perform Automated Operating System Patch Management",
+            d: "Perform operating system updates on enterprise assets through automated patch management on a monthly or more frequent basis."
+        }, {
+            c: 7,
+            id: "7.4",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Perform Automated Application Patch Management",
+            d: "Perform application updates on enterprise assets through automated patch management on a monthly or more frequent basis."
+        }, {
+            c: 7,
+            id: "7.5",
+            fn: "Identify",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Perform Automated Vulnerability Scans of Internal Enterprise Assets",
+            d: "Perform automated vulnerability scans of internal enterprise assets on a quarterly or more frequent basis. Conduct both authenticated and unauthenticated scans."
+        }, {
+            c: 7,
+            id: "7.6",
+            fn: "Identify",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Perform Automated Vulnerability Scans of Externally-Exposed Enterprise Assets",
+            d: "Perform automated vulnerability scans of externally-exposed enterprise assets on a monthly or more frequent basis."
+        }, {
+            c: 7,
+            id: "7.7",
+            fn: "Respond",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Remediate Detected Vulnerabilities",
+            d: "Remediate detected vulnerabilities in software through processes and tooling on a monthly or more frequent basis."
+        }, {
+            c: 8,
+            id: "8.1",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain an Audit Log Management Process",
+            d: "Establish and maintain a documented audit log management process that defines the enterprise's logging requirements, including collection, review, and retention."
+        }, {
+            c: 8,
+            id: "8.2",
+            fn: "Detect",
+            asset: "Data",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Collect Audit Logs",
+            d: "Collect audit logs. Ensure that logging, per the enterprise's audit log management process, has been enabled across enterprise assets."
+        }, {
+            c: 8,
+            id: "8.3",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Ensure Adequate Audit Log Storage",
+            d: "Ensure that logging destinations maintain adequate storage to comply with the enterprise's audit log management process."
+        }, {
+            c: 8,
+            id: "8.4",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Standardize Time Synchronization",
+            d: "Standardize time synchronization. Configure at least two synchronized time sources across enterprise assets, where supported."
+        }, {
+            c: 8,
+            id: "8.5",
+            fn: "Detect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Collect Detailed Audit Logs",
+            d: "Configure detailed audit logging for enterprise assets containing sensitive data. Include event source, date, username, timestamp, source and destination addresses."
+        }, {
+            c: 8,
+            id: "8.6",
+            fn: "Detect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Collect DNS Query Audit Logs",
+            d: "Collect DNS query audit logs on enterprise assets, where appropriate and supported."
+        }, {
+            c: 8,
+            id: "8.7",
+            fn: "Detect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Collect URL Request Audit Logs",
+            d: "Collect URL request audit logs on enterprise assets, where appropriate and supported."
+        }, {
+            c: 8,
+            id: "8.8",
+            fn: "Detect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Collect Command-Line Audit Logs",
+            d: "Collect command-line audit logs from PowerShell, BASH, and remote administrative terminals."
+        }, {
+            c: 8,
+            id: "8.9",
+            fn: "Detect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Centralize Audit Logs",
+            d: "Centralize audit log collection and retention across enterprise assets. Example: leveraging a SIEM tool to centralize multiple log sources."
+        }, {
+            c: 8,
+            id: "8.10",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Retain Audit Logs",
+            d: "Retain audit logs across enterprise assets for a minimum of 90 days."
+        }, {
+            c: 8,
+            id: "8.11",
+            fn: "Detect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Conduct Audit Log Reviews",
+            d: "Conduct reviews of audit logs to detect anomalies or abnormal events that could indicate a potential threat. Review weekly or more frequently."
+        }, {
+            c: 8,
+            id: "8.12",
+            fn: "Detect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Collect Service Provider Logs",
+            d: "Collect service provider logs, where supported. Example: collecting authentication and authorization events, data creation and disposal events."
+        }, {
+            c: 9,
+            id: "9.1",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Ensure Use of Only Fully Supported Browsers and Email Clients",
+            d: "Ensure only fully supported browsers and email clients are allowed to execute in the enterprise."
+        }, {
+            c: 9,
+            id: "9.2",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Use DNS Filtering Services",
+            d: "Use DNS filtering services on all end-user devices, including remote and on-premises assets, to block access to known malicious domains."
+        }, {
+            c: 9,
+            id: "9.3",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Maintain and Enforce Network-Based URL Filters",
+            d: "Enforce and update network-based URL filters to limit an enterprise asset from connecting to potentially malicious or unapproved websites."
+        }, {
+            c: 9,
+            id: "9.4",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Restrict Unnecessary or Unauthorized Browser and Email Client Extensions",
+            d: "Restrict any unauthorized or unnecessary browser or email client plugins, extensions, and add-on applications."
+        }, {
+            c: 9,
+            id: "9.5",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Implement DMARC",
+            d: "Implement DMARC policy and verification, starting with implementing SPF and DKIM standards, to lower the chance of spoofed or modified emails."
+        }, {
+            c: 9,
+            id: "9.6",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Block Unnecessary File Types",
+            d: "Block unnecessary file types attempting to enter the enterprise's email gateway."
+        }, {
+            c: 9,
+            id: "9.7",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Deploy and Maintain Email Server Anti-Malware Protections",
+            d: "Deploy and maintain email server anti-malware protections, such as attachment scanning and/or sandboxing."
+        }, {
+            c: 10,
+            id: "10.1",
+            fn: "Detect",
+            asset: "Devices",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Deploy and Maintain Anti-Malware Software",
+            d: "Deploy and maintain anti-malware software on all enterprise assets."
+        }, {
+            c: 10,
+            id: "10.2",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Configure Automatic Anti-Malware Signature Updates",
+            d: "Configure automatic updates for anti-malware signature files on all enterprise assets."
+        }, {
+            c: 10,
+            id: "10.3",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Disable Autorun and Autoplay for Removable Media",
+            d: "Disable autorun and autoplay auto-execute functionality for removable media."
+        }, {
+            c: 10,
+            id: "10.4",
+            fn: "Detect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Configure Automatic Anti-Malware Scanning of Removable Media",
+            d: "Configure anti-malware software to automatically scan removable media."
+        }, {
+            c: 10,
+            id: "10.5",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Enable Anti-Exploitation Features",
+            d: "Enable anti-exploitation features on enterprise assets and software, where possible, such as Microsoft DEP, Windows Defender Exploit Guard, or Apple SIP."
+        }, {
+            c: 10,
+            id: "10.6",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Centrally Manage Anti-Malware Software",
+            d: "Centrally manage anti-malware software."
+        }, {
+            c: 10,
+            id: "10.7",
+            fn: "Detect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Use Behavior-Based Anti-Malware Software",
+            d: "Use behavior-based anti-malware software."
+        }, {
+            c: 11,
+            id: "11.1",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Data Recovery Process",
+            d: "Establish and maintain a documented data recovery process addressing the scope of data recovery activities, recovery prioritization, and the security of backup data."
+        }, {
+            c: 11,
+            id: "11.2",
+            fn: "Recover",
+            asset: "Data",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Perform Automated Backups",
+            d: "Perform automated backups of in-scope enterprise assets. Run backups weekly or more frequently, based on the sensitivity of the data."
+        }, {
+            c: 11,
+            id: "11.3",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Protect Recovery Data",
+            d: "Protect recovery data with equivalent controls to the original data. Reference encryption or data separation, based on requirements."
+        }, {
+            c: 11,
+            id: "11.4",
+            fn: "Recover",
+            asset: "Data",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain an Isolated Instance of Recovery Data",
+            d: "Establish and maintain an isolated instance of recovery data. Example: version controlling backup destinations through offline, cloud, or off-site systems."
+        }, {
+            c: 11,
+            id: "11.5",
+            fn: "Recover",
+            asset: "Data",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Test Data Recovery",
+            d: "Test backup recovery quarterly or more frequently for a sampling of in-scope enterprise assets."
+        }, {
+            c: 12,
+            id: "12.1",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Ensure Network Infrastructure is Up-to-Date",
+            d: "Ensure network infrastructure is kept up to date. Review software versions monthly or more frequently."
+        }, {
+            c: 12,
+            id: "12.2",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Secure Network Architecture",
+            d: "Design and maintain a secure network architecture addressing segmentation, least privilege, and availability."
+        }, {
+            c: 12,
+            id: "12.3",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Securely Manage Network Infrastructure",
+            d: "Securely manage network infrastructure using version-controlled IaC and secure network protocols such as SSH and HTTPS."
+        }, {
+            c: 12,
+            id: "12.4",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain Architecture Diagram(s)",
+            d: "Establish and maintain architecture diagram(s) and/or other network system documentation. Review and update documentation annually."
+        }, {
+            c: 12,
+            id: "12.5",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Centralize Network Authentication, Authorization, and Auditing (AAA)",
+            d: "Centralize network AAA."
+        }, {
+            c: 12,
+            id: "12.6",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Use of Secure Network Management and Communication Protocols",
+            d: "Use secure network management and communication protocols (e.g., 802.1X, WPA2 Enterprise or greater)."
+        }, {
+            c: 12,
+            id: "12.7",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Ensure Remote Devices Utilize a VPN and are Connecting to an Enterprise's AAA Infrastructure",
+            d: "Require users to authenticate to enterprise-managed VPN and authentication services prior to accessing enterprise resources on end-user devices."
+        }, {
+            c: 12,
+            id: "12.8",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Establish and Maintain Dedicated Computing Resources for All Administrative Work",
+            d: "Establish and maintain dedicated computing resources, either physically or logically separated, for all administrative tasks or tasks requiring administrative access."
+        }, {
+            c: 13,
+            id: "13.1",
+            fn: "Detect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Centralize Security Event Alerting",
+            d: "Centralize security event alerting across enterprise assets for log correlation and analysis. Best practice: use of a SIEM or log analytics platform with vendor-defined event correlation alerts."
+        }, {
+            c: 13,
+            id: "13.2",
+            fn: "Detect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Deploy a Host-Based Intrusion Detection Solution",
+            d: "Deploy a host-based intrusion detection solution on enterprise assets, where appropriate and/or supported."
+        }, {
+            c: 13,
+            id: "13.3",
+            fn: "Detect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Deploy a Network Intrusion Detection Solution",
+            d: "Deploy a network intrusion detection solution on enterprise assets, where appropriate. Example: use of a NIDS or equivalent CSP service."
+        }, {
+            c: 13,
+            id: "13.4",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Perform Traffic Filtering Between Network Segments",
+            d: "Perform traffic filtering between network segments, where appropriate."
+        }, {
+            c: 13,
+            id: "13.5",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Manage Access Control for Remote Assets",
+            d: "Manage access control for assets remotely connecting to enterprise resources based on anti-malware status, configuration compliance, and OS/application currency."
+        }, {
+            c: 13,
+            id: "13.6",
+            fn: "Detect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Collect Network Traffic Flow Logs",
+            d: "Collect network traffic flow logs and/or network traffic to review and alert upon from network devices."
+        }, {
+            c: 13,
+            id: "13.7",
+            fn: "Protect",
+            asset: "Devices",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Deploy a Host-Based Intrusion Prevention Solution",
+            d: "Deploy a host-based intrusion prevention solution on enterprise assets. Example: use of an EDR client or host-based IPS agent."
+        }, {
+            c: 13,
+            id: "13.8",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Deploy a Network Intrusion Prevention Solution",
+            d: "Deploy a network intrusion prevention solution, where appropriate."
+        }, {
+            c: 13,
+            id: "13.9",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Deploy Port-Level Access Control",
+            d: "Deploy port-level access control using 802.1X or similar network access control protocols."
+        }, {
+            c: 13,
+            id: "13.10",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Perform Application Layer Filtering",
+            d: "Perform application layer filtering. Example: a filtering proxy, application layer firewall, or gateway."
+        }, {
+            c: 13,
+            id: "13.11",
+            fn: "Detect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Tune Security Event Alerting Thresholds",
+            d: "Tune security event alerting thresholds monthly or more frequently."
+        }, {
+            c: 14,
+            id: "14.1",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Security Awareness Program",
+            d: "Establish and maintain a security awareness program. Conduct training at hire and at least annually. Review and update content annually."
+        }, {
+            c: 14,
+            id: "14.2",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Train Workforce Members to Recognize Social Engineering Attacks",
+            d: "Train workforce members to recognize social engineering attacks, such as phishing, business email compromise (BEC), pretexting, and tailgating."
+        }, {
+            c: 14,
+            id: "14.3",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Train Workforce Members on Authentication Best Practices",
+            d: "Train workforce members on authentication best practices including MFA, password composition, and credential management."
+        }, {
+            c: 14,
+            id: "14.4",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Train Workforce on Data Handling Best Practices",
+            d: "Train workforce members on how to identify and properly store, transfer, archive, and destroy sensitive data."
+        }, {
+            c: 14,
+            id: "14.5",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Train Workforce Members on Causes of Unintentional Data Exposure",
+            d: "Train workforce members to be aware of causes for unintentional data exposure, such as mis-delivery of sensitive data or losing a portable end-user device."
+        }, {
+            c: 14,
+            id: "14.6",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Train Workforce Members on Recognizing and Reporting Security Incidents",
+            d: "Train workforce members to be able to recognize a potential incident and be able to report such an incident."
+        }, {
+            c: 14,
+            id: "14.7",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Train Workforce on How to Identify and Report Missing Security Updates",
+            d: "Train workforce to understand how to verify and report out-of-date software patches or any failures in automated processes and tools."
+        }, {
+            c: 14,
+            id: "14.8",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Train Workforce on the Dangers of Insecure Networks",
+            d: "Train workforce members on the dangers of connecting to and transmitting data over insecure networks for enterprise activities."
+        }, {
+            c: 14,
+            id: "14.9",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Conduct Role-Specific Security Awareness and Skills Training",
+            d: "Conduct role-specific security awareness and skills training, such as secure system administration courses for IT professionals or OWASP Top 10 training for developers."
+        }, {
+            c: 15,
+            id: "15.1",
+            fn: "Identify",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain an Inventory of Service Providers",
+            d: "Establish and maintain an inventory of service providers. List all known service providers, include classifications, and designate an enterprise contact for each."
+        }, {
+            c: 15,
+            id: "15.2",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Service Provider Management Policy",
+            d: "Establish and maintain a service provider management policy addressing the classification, inventory, assessment, monitoring, and decommissioning of service providers."
+        }, {
+            c: 15,
+            id: "15.3",
+            fn: "Govern",
+            asset: "Users",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Classify Service Providers",
+            d: "Classify service providers. Classification consideration may include data sensitivity, data volume, availability requirements, applicable regulations, and inherent risk."
+        }, {
+            c: 15,
+            id: "15.4",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Ensure Service Provider Contracts Include Security Requirements",
+            d: "Ensure service provider contracts include security requirements such as minimum security program requirements, incident notification, data encryption, and data disposal commitments."
+        }, {
+            c: 15,
+            id: "15.5",
+            fn: "Govern",
+            asset: "Users",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Assess Service Providers",
+            d: "Assess service providers consistent with the enterprise's service provider management policy. Assessment may include review of SOC 2 reports, PCI AoC, or customized questionnaires."
+        }, {
+            c: 15,
+            id: "15.6",
+            fn: "Govern",
+            asset: "Data",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Monitor Service Providers",
+            d: "Monitor service providers consistent with the enterprise's service provider management policy. Monitoring may include periodic reassessment and dark web monitoring."
+        }, {
+            c: 15,
+            id: "15.7",
+            fn: "Protect",
+            asset: "Data",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Securely Decommission Service Providers",
+            d: "Securely decommission service providers. Example: user and service account deactivation, termination of data flows, and secure disposal of enterprise data."
+        }, {
+            c: 16,
+            id: "16.1",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Secure Application Development Process",
+            d: "Establish and maintain a secure application development process addressing secure design standards, secure coding practices, developer training, and vulnerability management."
+        }, {
+            c: 16,
+            id: "16.2",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Process to Accept and Address Software Vulnerabilities",
+            d: "Establish and maintain a process to accept and address reports of software vulnerabilities, including providing a means for external entities to report."
+        }, {
+            c: 16,
+            id: "16.3",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Perform Root Cause Analysis on Security Vulnerabilities",
+            d: "Perform root cause analysis on security vulnerabilities to evaluate underlying issues that create vulnerabilities in code."
+        }, {
+            c: 16,
+            id: "16.4",
+            fn: "Identify",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Manage an Inventory of Third-Party Software Components",
+            d: "Establish and manage an updated inventory of third-party components used in development (software bill of materials). Evaluate the list at least monthly."
+        }, {
+            c: 16,
+            id: "16.5",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Use Up-to-Date and Trusted Third-Party Software Components",
+            d: "Use up-to-date and trusted third-party software components. Choose established and proven frameworks and libraries that provide adequate security."
+        }, {
+            c: 16,
+            id: "16.6",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Severity Rating System and Process for Application Vulnerabilities",
+            d: "Establish and maintain a severity rating system and process for application vulnerabilities that facilitates prioritizing the order in which discovered vulnerabilities are fixed."
+        }, {
+            c: 16,
+            id: "16.7",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Use Standard Hardening Configuration Templates for Application Infrastructure",
+            d: "Use standard, industry-recommended hardening configuration templates for application infrastructure components including servers, databases, and web servers."
+        }, {
+            c: 16,
+            id: "16.8",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Separate Production and Non-Production Systems",
+            d: "Maintain separate environments for production and non-production systems."
+        }, {
+            c: 16,
+            id: "16.9",
+            fn: "Protect",
+            asset: "Users",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Train Developers in Application Security Concepts and Secure Coding",
+            d: "Ensure that all software development personnel receive training in writing secure code for their specific development environment and responsibilities."
+        }, {
+            c: 16,
+            id: "16.10",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Apply Secure Design Principles in Application Architectures",
+            d: "Apply secure design principles in application architectures including least privilege and enforcing mediation to validate every operation the user makes."
+        }, {
+            c: 16,
+            id: "16.11",
+            fn: "Identify",
+            asset: "Software",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Leverage Vetted Modules or Services for Application Security Components",
+            d: "Leverage vetted modules or services for application security components such as identity management, encryption, and auditing and logging."
+        }, {
+            c: 16,
+            id: "16.12",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Implement Code-Level Security Checks",
+            d: "Apply static and dynamic analysis tools within the application life cycle to verify that secure coding practices are being followed."
+        }, {
+            c: 16,
+            id: "16.13",
+            fn: "Govern",
+            asset: "Software",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Conduct Application Penetration Testing",
+            d: "Conduct application penetration testing. For critical applications, authenticated penetration testing is better suited to finding business logic vulnerabilities."
+        }, {
+            c: 16,
+            id: "16.14",
+            fn: "Protect",
+            asset: "Software",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Conduct Threat Modeling",
+            d: "Conduct threat modeling to identify and address application security design flaws within a design, before code is created."
+        }, {
+            c: 17,
+            id: "17.1",
+            fn: "Respond",
+            asset: "Users",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Designate Personnel to Manage Incident Handling",
+            d: "Designate one key person, and at least one backup, who will manage the enterprise's incident handling process, including coordination and documentation of incident response and recovery."
+        }, {
+            c: 17,
+            id: "17.2",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain Contact Information for Reporting Security Incidents",
+            d: "Establish and maintain contact information for parties that need to be informed of security incidents. Verify contacts annually."
+        }, {
+            c: 17,
+            id: "17.3",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 1,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain an Enterprise Process for Reporting Incidents",
+            d: "Establish and maintain a documented enterprise process for the workforce to report security incidents including reporting timeframe, personnel to report to, and mechanism for reporting."
+        }, {
+            c: 17,
+            id: "17.4",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain an Incident Response Process",
+            d: "Establish and maintain a documented incident response process that addresses roles and responsibilities, compliance requirements, and a communication plan."
+        }, {
+            c: 17,
+            id: "17.5",
+            fn: "Respond",
+            asset: "Users",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Assign Key Roles and Responsibilities",
+            d: "Assign key roles and responsibilities for incident response, including staff from legal, IT, information security, facilities, public relations, and human resources."
+        }, {
+            c: 17,
+            id: "17.6",
+            fn: "Respond",
+            asset: "Users",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Define Mechanisms for Communicating During Incident Response",
+            d: "Determine which primary and secondary mechanisms will be used to communicate and report during a security incident. Review annually."
+        }, {
+            c: 17,
+            id: "17.7",
+            fn: "Recover",
+            asset: "Users",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Conduct Routine Incident Response Exercises",
+            d: "Plan and conduct routine incident response exercises and scenarios for key personnel, testing communication channels, decision-making, and workflows. Conduct annually at minimum."
+        }, {
+            c: 17,
+            id: "17.8",
+            fn: "Recover",
+            asset: "Users",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Conduct Post-Incident Reviews",
+            d: "Conduct post-incident reviews to prevent incident recurrence through identifying lessons learned and follow-up action."
+        }, {
+            c: 17,
+            id: "17.9",
+            fn: "Recover",
+            asset: "Docs",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Establish and Maintain Security Incident Thresholds",
+            d: "Establish and maintain security incident thresholds, including differentiating between an incident and an event. Review annually."
+        }, {
+            c: 18,
+            id: "18.1",
+            fn: "Govern",
+            asset: "Docs",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Establish and Maintain a Penetration Testing Program",
+            d: "Establish and maintain a penetration testing program appropriate to the size, complexity, industry, and maturity of the enterprise."
+        }, {
+            c: 18,
+            id: "18.2",
+            fn: "Detect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Perform Periodic External Penetration Tests",
+            d: "Perform periodic external penetration tests based on program requirements, no less than annually. Must include enterprise and environmental reconnaissance."
+        }, {
+            c: 18,
+            id: "18.3",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 1,
+            ig3: 1,
+            t: "Remediate Penetration Test Findings",
+            d: "Remediate penetration test findings based on the enterprise's documented vulnerability remediation process, with a timeline based on impact and prioritization."
+        }, {
+            c: 18,
+            id: "18.4",
+            fn: "Protect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Validate Security Measures",
+            d: "Validate security measures after each penetration test. If deemed necessary, modify rulesets and capabilities to detect the techniques used during testing."
+        }, {
+            c: 18,
+            id: "18.5",
+            fn: "Detect",
+            asset: "Network",
+            ig1: 0,
+            ig2: 0,
+            ig3: 1,
+            t: "Perform Periodic Internal Penetration Tests",
+            d: "Perform periodic internal penetration tests based on program requirements, no less than annually."
+        }];
+
+        const IG_INFO = {
+            1: "Small/low-risk organizations. Essential cyber hygiene covering 56 safeguards.",
+            2: "Medium complexity organizations. Foundational security covering 130 safeguards.",
+            3: "High-risk or mature enterprises. Complete security program covering all 153 safeguards."
+        };
+
+        let state = {},
+            notes = {},
+            currentIG = 1,
+            currentFn = "all",
+            search = "",
+            expanded = new Set();
+        SG.forEach(s => {
+            state[s.id] = "";
+            notes[s.id] = "";
+        });
+
+        const STATUS_CLASSES = {
+            "In place": "s-inplace",
+            "Partial": "s-partial",
+            "Gap": "s-gap",
+            "N/A": "s-na"
+        };
+
+        function getVisible() {
+            const igKey = `ig${currentIG}`;
+            return SG.filter(s => {
+                if (!s[igKey]) return false;
+                if (currentFn !== "all" && s.fn !== currentFn) return false;
+                if (search) {
+                    const q = search.toLowerCase();
+                    if (!s.t.toLowerCase().includes(q) && !s.id.includes(q)) return false;
+                }
+                return true;
+            });
+        }
+
+        function calcStats(sgs) {
+            let impl = 0,
+                partial = 0,
+                gap = 0,
+                na = 0;
+            sgs.forEach(s => {
+                if (state[s.id] === "In place") impl++;
+                else if (state[s.id] === "Partial") partial++;
+                else if (state[s.id] === "Gap") gap++;
+                else if (state[s.id] === "N/A") na++;
+            });
+            return {
+                impl,
+                partial,
+                gap,
+                na,
+                total: sgs.length
+            };
+        }
+
+        function ctrlScore(cNum, ig) {
+            const igKey = `ig${ig}`;
+            const sgs = SG.filter(s => s.c === cNum && s[igKey]);
+            if (!sgs.length) return null;
+            const {
+                impl,
+                partial,
+                gap,
+                na,
+                total
+            } = calcStats(sgs);
+            const denom = total - na;
+            if (denom === 0) return {
+                pct: 100,
+                assessed: total
+            };
+            const pct = Math.round((impl + partial * 0.5) / denom * 100);
+            const assessed = impl + partial + gap + na;
+            return {
+                pct,
+                assessed,
+                total
+            };
+        }
+
+        function pillFor(pct) {
+            if (pct === null) return 'pill-gray';
+            if (pct >= 80) return 'pill-green';
+            if (pct >= 40) return 'pill-amber';
+            return 'pill-red';
+        }
+
+        function updateScores() {
+            const vis = getVisible();
+            const {
+                impl,
+                partial,
+                gap,
+                na,
+                total
+            } = calcStats(vis);
+            const denom = total - na;
+            const pct = denom > 0 ? Math.round((impl + partial * 0.5) / denom * 100) : 0;
+            document.getElementById('scorePct').textContent = pct + '%';
+            document.getElementById('statImpl').textContent = impl;
+            document.getElementById('statPartial').textContent = partial;
+            document.getElementById('statGap').textContent = gap;
+            document.getElementById('statNa').textContent = na;
+            const circumference = 226;
+            const offset = circumference - (pct / 100 * circumference);
+            document.getElementById('ringFill').style.strokeDashoffset = offset;
+            const ringColor = pct >= 80 ? '#1D9E75' : pct >= 40 ? '#BA7517' : '#E24B4A';
+            document.getElementById('ringFill').style.stroke = ringColor;
+            document.getElementById('scorePct').style.color = ringColor;
+            const assessed = impl + partial + gap + na;
+            document.getElementById('barAssessed').textContent = assessed;
+            document.getElementById('barTotal').textContent = total;
+            document.querySelectorAll('[data-ctrl-score]').forEach(el => {
+                const cNum = parseInt(el.dataset.ctrlScore);
+                const sc = ctrlScore(cNum, currentIG);
+                if (sc) {
+                    el.textContent = sc.pct + '%';
+                    el.className = 'ctrl-score-pill ' + pillFor(sc.pct);
+                }
+            });
+            document.querySelectorAll('[data-ctrl-bar]').forEach(el => {
+                const cNum = parseInt(el.dataset.ctrlBar);
+                const sc = ctrlScore(cNum, currentIG);
+                if (sc) {
+                    const color = sc.pct >= 80 ? '#1D9E75' : sc.pct >= 40 ? '#BA7517' : '#E24B4A';
+                    el.querySelector('.ctrl-progress-fill').style.width = sc.pct + '%';
+                    el.querySelector('.ctrl-progress-fill').style.background = color;
+                }
+            });
+        }
+
+        function render() {
+            const vis = getVisible();
+            const ctrlNums = [...new Set(vis.map(s => s.c))];
+            const list = document.getElementById('controlsList');
+            const empty = document.getElementById('emptyState');
+            if (!ctrlNums.length) {
+                list.innerHTML = '';
+                empty.classList.remove('hidden');
+                updateScores();
+                return;
+            }
+            empty.classList.add('hidden');
+            document.getElementById('metaCount').textContent = vis.length;
+            document.getElementById('metaControls').textContent = ctrlNums.length;
+            list.innerHTML = ctrlNums.map(cNum => {
+                        const cSgs = vis.filter(s => s.c === cNum);
+                        const sc = ctrlScore(cNum, currentIG);
+                        const isOpen = expanded.has(cNum);
+                        const pct = sc ? sc.pct : 0;
+                        return `
+    <div class="control-card" id="card-${cNum}">
+      <div class="control-header" onclick="toggleCard(${cNum})">
+        <div class="ctrl-num-badge">${cNum}<\/div>
+        <div class="ctrl-info">
+          <div class="ctrl-name">${CONTROLS[cNum]}<\/div>
+          <div class="ctrl-sub">${cSgs.length} safeguard${cSgs.length>1?'s':''} in scope<\/div>
+        <\/div>
+        <div class="ctrl-right">
+          <span class="ctrl-score-pill ${pillFor(pct)}" data-ctrl-score="${cNum}">${pct}%<\/span>
+          <svg class="ctrl-chevron${isOpen?' open':''}" id="chev-${cNum}" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/><\/svg>
+        <\/div>
+      <\/div>
+      <div class="ctrl-progress" data-ctrl-bar="${cNum}">
+        <div class="ctrl-progress-fill" style="width:${pct}%;background:${pct>=80?'#1D9E75':pct>=40?'#BA7517':'#E24B4A'}"><\/div>
+      <\/div>
+      <div class="safeguards-table" id="sgt-${cNum}" style="display:${isOpen?'block':'none'}">
+        ${cSgs.map(sg => {
+          const sc = STATUS_CLASSES[state[sg.id]] || '';
+          return `
+          <div class="sg-row">
+            <div class="sg-id">${sg.id}<\/div>
+            <div class="sg-body">
+              <div class="sg-title">${sg.t}<\/div>
+              <div class="sg-tags">
+                <span class="sg-tag sg-tag-fn-${sg.fn}">${sg.fn}<\/span>
+                <span class="sg-tag">${sg.asset}<\/span>
+              <\/div>
+              <span class="sg-desc-toggle" onclick="toggleDesc('${sg.id}')">&#9656; details<\/span>
+              <div class="sg-desc" id="desc-${sg.id}">${sg.d}<\/div>
+            <\/div>
+            <div class="sg-status">
+              <select class="status-select ${sc}" onchange="setStatus('${sg.id}',this.value)" id="sel-${sg.id}">
+                <option value="">— not assessed<\/option>
+                <option${state[sg.id]==='In place'?' selected':''}>In place<\/option>
+                <option${state[sg.id]==='Partial'?' selected':''}>Partial<\/option>
+                <option${state[sg.id]==='Gap'?' selected':''}>Gap<\/option>
+                <option${state[sg.id]==='N/A'?' selected':''}>N/A<\/option>
+              <\/select>
+              <textarea class="notes-input" placeholder="Notes…" onchange="setNote('${sg.id}',this.value)">${notes[sg.id]}<\/textarea>
+            <\/div>
+          <\/div>`;
+        }).join('')}
+      <\/div>
+    <\/div>`;
+  }).join('');
+  updateScores();
+}
+
+function toggleCard(n) {
+  if (expanded.has(n)) expanded.delete(n); else expanded.add(n);
+  const sgt = document.getElementById('sgt-'+n);
+  const chev = document.getElementById('chev-'+n);
+  sgt.style.display = expanded.has(n) ? 'block' : 'none';
+  if (expanded.has(n)) chev.classList.add('open'); else chev.classList.remove('open');
+}
+
+function toggleDesc(id) {
+  const el = document.getElementById('desc-'+id);
+  const tog = el.previousElementSibling;
+  const show = !el.classList.contains('show');
+  el.classList.toggle('show', show);
+  tog.textContent = show ? '▾ details' : '▸ details';
+}
+
+function setStatus(id, val) {
+  state[id] = val;
+  const sel = document.getElementById('sel-'+id);
+  sel.className = 'status-select ' + (STATUS_CLASSES[val] || '');
+  updateScores();
+}
+
+function setNote(id, val) { notes[id] = val; }
+
+document.querySelectorAll('.ig-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.ig-tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    currentIG = parseInt(t.dataset.ig);
+    document.getElementById('igInfo').textContent = IG_INFO[currentIG];
+    render();
+  });
+});
+
+document.querySelectorAll('.fn-filter').forEach(f => {
+  f.addEventListener('click', () => {
+    document.querySelectorAll('.fn-filter').forEach(x => x.classList.remove('active'));
+    f.classList.add('active');
+    currentFn = f.dataset.fn;
+    render();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  search = e.target.value.trim();
+  if (search) {
+    SG.forEach(s => { if (`ig${currentIG}` in s && s[`ig${currentIG}`]) expanded.add(s.c); });
+  }
+  render();
+});
+
+document.getElementById('expandAllBtn').addEventListener('click', () => {
+  getVisible().forEach(s => expanded.add(s.c));
+  render();
+});
+
+document.getElementById('collapseAllBtn').addEventListener('click', () => {
+  expanded.clear();
+  render();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all assessments? This cannot be undone.')) return;
+  SG.forEach(s => { state[s.id] = ''; notes[s.id] = ''; });
+  render();
+});
+
+function exportCSV() {
+  const client = document.getElementById('clientName').value || 'Organization';
+  const vis = getVisible();
+  let csv = 'CIS Controls v8.1 Gap Analysis\nClient: ' + client + '\nIG Level: IG' + currentIG + '\nDate: ' + new Date().toLocaleDateString() + '\n\n';
+  csv += 'Safeguard ID,Control,Title,Function,Asset Type,IG1,IG2,IG3,Status,Notes\n';
+  vis.forEach(s => {
+    const note = (notes[s.id]||'').replace(/"/g,'""');
+    csv += '"' + s.id + '","' + CONTROLS[s.c] + '","' + s.t + '","' + s.fn + '","' + s.asset + '",' + (s.ig1?'Yes':'No') + ',' + (s.ig2?'Yes':'No') + ',' + (s.ig3?'Yes':'No') + ',"' + (state[s.id]||'Not assessed') + '","' + note + '"\n';
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'CIS_Gap_Analysis_' + client.replace(/\s+/g,'_') + '_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+}
+
+document.getElementById('exportCsvBtn').addEventListener('click', exportCSV);
+document.getElementById('exportCsvBtn2').addEventListener('click', exportCSV);
+document.getElementById('exportPrintBtn').addEventListener('click', () => window.print());
+
+document.getElementById('aiReportBtn').addEventListener('click', () => { generateReport(); });
+
+render();
+    </script>
+
+    <!-- REPORT MODAL -->
+    <div id="reportModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.75);overflow-y:auto;padding:32px 16px">
+        <div style="max-width:900px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.4)">
+            <div id="reportContent"></div>
+            <div style="padding:16px 32px 24px;border-top:1px solid #e5e7eb;display:flex;gap:10px;justify-content:flex-end;background:#f9fafb">
+                <button onclick="window.print()" style="padding:9px 20px;border-radius:8px;border:1px solid #d1d5db;background:#fff;font-size:13px;font-weight:500;cursor:pointer">Print / Save PDF</button>
+                <button onclick="document.getElementById('reportModal').style.display='none'" style="padding:9px 20px;border-radius:8px;border:none;background:#1D9E75;color:#fff;font-size:13px;font-weight:500;cursor:pointer">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @media print {
+            body>*:not(#reportModal) {
+                display: none!important;
+            }
+            #reportModal {
+                position: static!important;
+                background: none!important;
+                padding: 0!important;
+                display: block!important;
+            }
+            #reportModal>div {
+                box-shadow: none!important;
+                border-radius: 0!important;
+            }
+            #reportModal>div>div:last-child {
+                display: none!important;
+            }
+        }
+    </style>
+
+    <script>
+        function generateReport() {
+            const client = document.getElementById('clientName').value || 'Organization';
+            const date = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const vis = getVisible();
+            let impl = 0,
+                partial = 0,
+                gap = 0,
+                na = 0;
+            const gapItems = [],
+                partialItems = [],
+                implItems = [];
+            const byControl = {};
+
+            vis.forEach(s => {
+                const st = state[s.id];
+                if (!byControl[s.c]) byControl[s.c] = {
+                    name: CONTROLS[s.c],
+                    impl: 0,
+                    partial: 0,
+                    gap: 0,
+                    na: 0,
+                    total: 0
+                };
+                byControl[s.c].total++;
+                if (st === 'In place') {
+                    impl++;
+                    implItems.push(s);
+                    byControl[s.c].impl++;
+                } else if (st === 'Partial') {
+                    partial++;
+                    partialItems.push(s);
+                    byControl[s.c].partial++;
+                } else if (st === 'Gap') {
+                    gap++;
+                    gapItems.push(s);
+                    byControl[s.c].gap++;
+                } else if (st === 'N/A') {
+                    na++;
+                    byControl[s.c].na++;
+                }
+            });
+
+            const denom = vis.length - na;
+            const pct = denom > 0 ? Math.round((impl + partial * 0.5) / denom * 100) : 0;
+            const assessed = impl + partial + gap + na;
+            const riskLevel = pct >= 80 ? 'Low' : pct >= 60 ? 'Moderate' : pct >= 40 ? 'Elevated' : 'High';
+            const riskColor = pct >= 80 ? '#059669' : pct >= 60 ? '#d97706' : pct >= 40 ? '#ea580c' : '#dc2626';
+            const riskBg = pct >= 80 ? '#ecfdf5' : pct >= 60 ? '#fffbeb' : pct >= 40 ? '#fff7ed' : '#fef2f2';
+
+            // Priority matrix: gaps by control, highest-gap controls first
+            const ctrlList = Object.entries(byControl)
+                .map(([c, v]) => ({
+                    c: parseInt(c),
+                    name: v.name,
+                    ...v,
+                    score: v.total - v.na > 0 ? Math.round((v.impl + v.partial * 0.5) / (v.total - v.na) * 100) : 100
+                }))
+                .sort((a, b) => a.score - b.score);
+
+            const topGaps = gapItems.slice(0, 10);
+            const igLabel = ['', 'Basic (IG1)', 'Foundational (IG2)', 'Advanced (IG3)'][currentIG];
+
+            function scoreColor(p) {
+                return p >= 80 ? '#059669' : p >= 60 ? '#d97706' : p >= 40 ? '#ea580c' : '#dc2626';
+            }
+
+            function scoreBg(p) {
+                return p >= 80 ? '#ecfdf5' : p >= 60 ? '#fffbeb' : p >= 40 ? '#fff7ed' : '#fef2f2';
+            }
+
+            const ctrlRows = ctrlList.map(ct => {
+                const s = ct.score;
+                const bar = '<div style="height:6px;background:#e5e7eb;border-radius:3px;margin-top:4px"><div style="height:6px;border-radius:3px;width:' + s + '%;background:' + scoreColor(s) + '"></div><\/div>';
+                return '<tr style="border-bottom:1px solid #f3f4f6">' +
+                    '<td style="padding:10px 12px;font-size:12px;font-weight:600;color:#6b7280">' + ct.c + '<\/td>' +
+                    '<td style="padding:10px 12px;font-size:13px;color:#111827">' + ct.name + '<\/td>' +
+                    '<td style="padding:10px 12px;text-align:center;font-size:12px;color:#059669;font-weight:600">' + ct.impl + '<\/td>' +
+                    '<td style="padding:10px 12px;text-align:center;font-size:12px;color:#d97706;font-weight:600">' + ct.partial + '<\/td>' +
+                    '<td style="padding:10px 12px;text-align:center;font-size:12px;color:#dc2626;font-weight:600">' + ct.gap + '<\/td>' +
+                    '<td style="padding:10px 12px;text-align:center;font-size:12px;color:#6b7280">' + ct.na + '<\/td>' +
+                    '<td style="padding:10px 12px;min-width:120px"><div style="font-size:12px;font-weight:700;color:' + scoreColor(s) + '">' + s + '%<\/div>' + bar + '<\/td>' +
+                    '<\/tr>';
+            }).join('');
+
+            const gapRows = topGaps.map((s, i) => {
+                const n = notes[s.id] || '';
+                const pri = i < 3 ? 'Critical' : i < 6 ? 'High' : 'Medium';
+                const priC = i < 3 ? '#dc2626' : i < 6 ? '#ea580c' : '#d97706';
+                const priBg = i < 3 ? '#fef2f2' : i < 6 ? '#fff7ed' : '#fffbeb';
+                return '<tr style="border-bottom:1px solid #f3f4f6">' +
+                    '<td style="padding:10px 12px;font-size:11px;font-weight:700;color:#6b7280">' + s.id + '<\/td>' +
+                    '<td style="padding:10px 12px"><div style="font-size:13px;font-weight:500;color:#111827">' + s.t + '<\/div>' +
+                    (n ? '<div style="font-size:11px;color:#6b7280;margin-top:3px">Note: ' + n + '<\/div>' : '') + '<\/td>' +
+                    '<td style="padding:10px 12px;font-size:11px;color:#6b7280">' + s.fn + '<\/td>' +
+                    '<td style="padding:10px 12px"><span style="font-size:11px;padding:2px 8px;border-radius:10px;background:' + priBg + ';color:' + priC + ';font-weight:600">' + pri + '<\/span><\/td>' +
+                    '<\/tr>';
+            }).join('');
+
+            const partialRows = partialItems.slice(0, 8).map(s => {
+                const n = notes[s.id] || '';
+                return '<tr style="border-bottom:1px solid #f3f4f6">' +
+                    '<td style="padding:10px 12px;font-size:11px;font-weight:700;color:#6b7280">' + s.id + '<\/td>' +
+                    '<td style="padding:10px 12px"><div style="font-size:13px;font-weight:500;color:#111827">' + s.t + '<\/div>' +
+                    (n ? '<div style="font-size:11px;color:#6b7280;margin-top:3px">Note: ' + n + '<\/div>' : '') + '<\/td>' +
+                    '<td style="padding:10px 12px;font-size:11px;color:#6b7280">' + s.fn + '<\/td>' +
+                    '<\/tr>';
+            }).join('');
+
+            // Roadmap: top 5 gaps as 30/60/90-day items
+            const roadmap = gapItems.slice(0, 5).map((s, i) => {
+                const phase = i < 2 ? '0–30 days' : i < 4 ? '30–60 days' : '60–90 days';
+                const phaseC = i < 2 ? '#059669' : i < 4 ? '#d97706' : '#6b7280';
+                return '<tr style="border-bottom:1px solid #f3f4f6">' +
+                    '<td style="padding:10px 12px;white-space:nowrap"><span style="font-size:11px;font-weight:600;color:' + phaseC + '">' + phase + '<\/span><\/td>' +
+                    '<td style="padding:10px 12px;font-size:11px;font-weight:600;color:#6b7280">' + s.id + '<\/td>' +
+                    '<td style="padding:10px 12px;font-size:13px;color:#111827">' + s.t + '<\/td>' +
+                    '<td style="padding:10px 12px;font-size:11px;color:#6b7280">' + s.fn + '<\/td>' +
+                    '<\/tr>';
+            }).join('');
+
+            const html = `
+  <div style="padding:40px 40px 0;background:linear-gradient(135deg,#0f172a 0%,#1e3a3a 100%);color:#fff">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:#1D9E75;border-radius:7px;display:flex;align-items:center;justify-content:center">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="white"><path d="M8 1L2 4v4c0 3.3 2.5 6.4 6 7 3.5-.6 6-3.7 6-7V4L8 1z"\/><\/svg>
+          <\/div>
+          <span style="font-size:13px;color:#94a3b8;font-weight:500">CIS Controls v8.1 — Gap Analysis Report<\/span>
+        <\/div>
+        <h1 style="font-size:28px;font-weight:700;color:#fff;margin-bottom:6px">${client}<\/h1>
+        <p style="font-size:14px;color:#94a3b8">Scope: ${igLabel} &nbsp;·&nbsp; ${date}<\/p>
+      <\/div>
+      <div style="text-align:right">
+        <div style="font-size:48px;font-weight:800;color:${riskColor};line-height:1">${pct}%<\/div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:4px">Overall compliance score<\/div>
+        <div style="margin-top:8px;padding:4px 14px;border-radius:20px;background:${riskBg};display:inline-block">
+          <span style="font-size:12px;font-weight:700;color:${riskColor}">Risk Level: ${riskLevel}<\/span>
+        <\/div>
+      <\/div>
+    <\/div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;padding-bottom:32px">
+      ${[
+        ['Total','Safeguards',vis.length,'#94a3b8'],
+        ['Assessed','Reviewed',assessed,'#60a5fa'],
+        ['In Place','Implemented',impl,'#34d399'],
+        ['Partial','Incomplete',partial,'#fbbf24'],
+        ['Gaps','Not implemented',gap,'#f87171']
+      ].map(([label,sub,val,color])=>`
+        <div style="background:rgba(255,255,255,0.07);border-radius:10px;padding:16px;border:1px solid rgba(255,255,255,0.1)">
+          <div style="font-size:28px;font-weight:700;color:${color}">${val}<\/div>
+          <div style="font-size:12px;font-weight:600;color:#e2e8f0;margin-top:4px">${label}<\/div>
+          <div style="font-size:11px;color:#94a3b8">${sub}<\/div>
+        <\/div>`).join('')}
+    <\/div>
+  <\/div>
+
+  <div style="padding:32px 40px">
+
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:24px;margin-bottom:32px">
+      <h2 style="font-size:16px;font-weight:700;color:#14532d;margin-bottom:12px">Executive Summary<\/h2>
+      <p style="font-size:14px;color:#166534;line-height:1.7">
+        ${client} completed a CIS Controls v8.1 gap assessment at the <strong>${igLabel}<\/strong> level, 
+        covering <strong>${vis.length} safeguards<\/strong> across 18 security domains.
+        The organization achieved an overall compliance score of <strong>${pct}%<\/strong>, 
+        representing a <strong>${riskLevel} risk<\/strong> posture.
+        Of the ${assessed} safeguards assessed, <strong>${impl} are fully in place<\/strong>, 
+        ${partial} are partially implemented, and <strong>${gap} represent active gaps<\/strong> requiring remediation.
+        ${gap>0?'Immediate attention is recommended for the '+Math.min(gap,3)+' highest-priority gaps identified in the detailed findings below.'
+          :'The organization demonstrates strong security hygiene across assessed controls.'}
+      <\/p>
+    <\/div>
+
+    <h2 style="font-size:16px;font-weight:700;color:#111827;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #e5e7eb">
+      Control-by-Control Breakdown
+    <\/h2>
+    <div style="overflow-x:auto;margin-bottom:32px">
+      <table style="width:100%;border-collapse:collapse;font-family:inherit">
+        <thead>
+          <tr style="background:#f9fafb;border-bottom:2px solid #e5e7eb">
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">#<\/th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Control<\/th>
+            <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#059669;text-transform:uppercase;letter-spacing:.05em">In Place<\/th>
+            <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#d97706;text-transform:uppercase;letter-spacing:.05em">Partial<\/th>
+            <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.05em">Gap<\/th>
+            <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">N/A<\/th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Score<\/th>
+          <\/tr>
+        <\/thead>
+        <tbody>${ctrlRows}<\/tbody>
+      <\/table>
+    <\/div>
+
+    ${gapItems.length>0?`
+    <h2 style="font-size:16px;font-weight:700;color:#111827;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #e5e7eb">
+      Gap Findings — Prioritized
+    <\/h2>
+    <div style="overflow-x:auto;margin-bottom:32px">
+      <table style="width:100%;border-collapse:collapse;font-family:inherit">
+        <thead>
+          <tr style="background:#fef2f2;border-bottom:2px solid #fecaca">
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#991b1b;text-transform:uppercase">ID<\/th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#991b1b;text-transform:uppercase">Safeguard<\/th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#991b1b;text-transform:uppercase">Function<\/th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#991b1b;text-transform:uppercase">Priority<\/th>
+          <\/tr>
+        <\/thead>
+        <tbody>${gapRows}<\/tbody>
+      <\/table>
+    <\/div>`:''}
+
+    ${partialItems.length>0?`
+    <h2 style="font-size:16px;font-weight:700;color:#111827;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #e5e7eb">
+      Partial Implementations — Require Completion
+    <\/h2>
+    <div style="overflow-x:auto;margin-bottom:32px">
+      <table style="width:100%;border-collapse:collapse;font-family:inherit">
+        <thead>
+          <tr style="background:#fffbeb;border-bottom:2px solid #fde68a">
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase">ID<\/th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase">Safeguard<\/th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase">Function<\/th>
+          <\/tr>
+        <\/thead>
+        <tbody>${partialRows}<\/tbody>
+      <\/table>
+    <\/div>`:''}
+
+    ${gapItems.length>0?`
+    <h2 style="font-size:16px;font-weight:700;color:#111827;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #e5e7eb">
+      90-Day Remediation Roadmap
+    <\/h2>
+    <div style="overflow-x:auto;margin-bottom:32px">
+      <table style="width:100%;border-collapse:collapse;font-family:inherit">
+        <thead>
+          <tr style="background:#f9fafb;border-bottom:2px solid #e5e7eb">
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase">Phase<\/th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase">ID<\/th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase">Action<\/th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase">Function<\/th>
+          <\/tr>
+        <\/thead>
+        <tbody>${roadmap}<\/tbody>
+      <\/table>
+    <\/div>`:''}
+
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px;margin-bottom:8px">
+      <h3 style="font-size:14px;font-weight:700;color:#334155;margin-bottom:8px">Recommended Next Steps<\/h3>
+      <ol style="font-size:13px;color:#475569;line-height:1.8;padding-left:20px">
+        <li>Share this report with IT leadership and the board for risk acceptance or remediation sign-off<\/li>
+        <li>Assign owners to each gap item with a target completion date<\/li>
+        <li>Prioritize the 0–30 day roadmap items — these represent the highest-risk, lowest-effort wins<\/li>
+        <li>Schedule a follow-up assessment in 90 days to measure progress<\/li>
+        <li>Consider engaging a vCISO for ongoing program management if internal capacity is limited<\/li>
+      <\/ol>
+    <\/div>
+
+    <div style="text-align:center;padding:20px 0 8px;font-size:11px;color:#94a3b8">
+      <div style="border-top:1px solid #e2e8f0;margin-top:8px;padding-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#1D9E75,#0f6e56);display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0">MR<\/div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#111827">Mizanur Rahman Pranto<\/div>
+            <div style="font-size:11px;color:#6b7280">Cybersecurity Consultant · CIS Controls Specialist<\/div>
+          <\/div>
+        <\/div>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <a href="mailto:mprantox41@gmail.com" style="display:flex;align-items:center;gap:5px;font-size:12px;color:#1D9E75;text-decoration:none;font-weight:500">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"\/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"\/><\/svg>
+            mprantox41@gmail.com
+          <\/a>
+          <a href="https://www.linkedin.com/in/mrpranto1997/" target="_blank" style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0077b5;text-decoration:none;font-weight:500">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#0077b5"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"\/><rect x="2" y="9" width="4" height="12"\/><circle cx="4" cy="4" r="2"\/><\/svg>
+            linkedin.com/in/mrpranto1997
+          <\/a>
+        <\/div>
+      <\/div>
+      <div style="text-align:center;margin-top:14px;font-size:10px;color:#cbd5e1">
+        Generated ${date} &nbsp;·&nbsp; CIS Controls® is a registered trademark of the Center for Internet Security, Inc.
+      <\/div>
+    <\/div>
+
+  <\/div>`;
+
+  document.getElementById('reportContent').innerHTML = html;
+  document.getElementById('reportModal').style.display = 'block';
+  document.getElementById('reportModal').scrollTop = 0;
+}
+    </script>
+</body>
+
+</html>
