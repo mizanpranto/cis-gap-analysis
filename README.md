@@ -34,7 +34,7 @@ It covers every safeguard from the official CIS Controls v8.1 framework, organiz
 ## How to use
 
 ### Option 1 — Live link
-Open **[mrpranto.github.io/cis-gap-analysis](https://mrpranto.github.io/cis-gap-analysis)** in any browser.
+Open **[mrpranto.github.io/cis-gap-analysis](https://mizanpranto.github.io/cis-gap-analysis/)** in any browser.
 
 ### Option 2 — Download and run locally
 1. Download [`index.html`](./index.html)
